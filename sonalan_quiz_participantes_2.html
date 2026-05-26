@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Quiz Sonalan HFP</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  /* ── RESET & BASE ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0d2545; --navy2: #163760; --blue: #1e5ca8; --blue2: #3b82d6;
+    --green: #5cb85c; --correct: #22c55e; --wrong: #ef4444;
+    --gold: #f0a500; --white: #f0f6ff;
+  }
+  body {
+    background: var(--navy);
+    font-family: 'Outfit', sans-serif;
+    color: var(--white);
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(ellipse at 15% 0%, rgba(30,92,168,.35) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 100%, rgba(76,175,80,.18) 0%, transparent 50%);
+  }
+
+  /* ── LAYOUT ── */
+  .wrap { position:relative; z-index:1; max-width:560px; margin:0 auto; padding:0 18px 60px; }
+
+  /* ── HEADER ── */
+  .header { display:flex; flex-direction:column; align-items:center; padding:32px 0 24px; gap:8px; }
+  .brand-row { display:flex; align-items:center; gap:12px; }
+  .b-sonalan { font-family:'Bebas Neue',sans-serif; font-size:40px; letter-spacing:2px; }
+  .b-hfp { font-size:11px; font-weight:700; letter-spacing:3px; color:var(--green);
+    background:rgba(76,175,80,.12); border:1px solid rgba(76,175,80,.3);
+    padding:3px 9px; border-radius:4px; }
+  .b-gowan { font-size:10px; letter-spacing:4px; color:rgba(255,255,255,.3); }
+  .header h1 { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:3px; color:var(--blue2); }
+
+  /* ── PROGRESS ── */
+  .prog-bar { height:4px; background:rgba(255,255,255,.07); border-radius:99px; overflow:hidden; margin:16px 0 6px; }
+  .prog-fill { height:100%; background:linear-gradient(90deg,var(--blue),var(--green)); border-radius:99px; transition:width .5s ease; }
+  .prog-meta { display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,.3); margin-bottom:20px; }
+
+  /* ── SCORE LIVE ── */
+  .score-live { text-align:center; font-size:12px; color:rgba(255,255,255,.3); margin-bottom:10px; }
+  .score-live span { color:var(--green); font-weight:700; }
+
+  /* ── CARD ── */
+  .card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:20px; padding:28px 24px; animation:slideIn .35s ease; }
+  @keyframes slideIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── QUESTION META ── */
+  .q-meta { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .q-num { font-size:11px; letter-spacing:1.5px; color:rgba(255,255,255,.25); }
+  .q-tag { font-size:10px; font-weight:700; letter-spacing:1.5px; padding:3px 9px; border-radius:30px; }
+  .tag-b { background:rgba(59,130,214,.18); color:#7ec8f0; border:1px solid rgba(59,130,214,.3); }
+  .tag-t { background:rgba(240,165,0,.18);  color:#ffd166; border:1px solid rgba(240,165,0,.3); }
+  .tag-p { background:rgba(232,82,26,.18);  color:#ff9870; border:1px solid rgba(232,82,26,.3); }
+
+  /* ── QUESTION TEXT ── */
+  .q-text { font-size:17px; font-weight:500; line-height:1.55; margin-bottom:20px; }
+
+  /* ── TIMER ── */
+  .timer-row { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+  .timer-circle { position:relative; width:50px; height:50px; flex-shrink:0; }
+  .timer-circle svg { transform:rotate(-90deg); }
+  .timer-num { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:monospace; font-size:16px; font-weight:700; }
+  .timer-label { font-size:12px; color:rgba(255,255,255,.4); line-height:1.4; }
+  .timer-label strong { display:block; color:rgba(255,255,255,.75); font-size:13px; margin-bottom:2px; }
+  .urgent { color:var(--wrong) !important; }
+
+  /* ── OPTIONS ── */
+  .options { display:flex; flex-direction:column; gap:10px; }
+  .opt-btn {
+    display:flex; align-items:center; gap:12px;
+    background:rgba(255,255,255,.04); border:1.5px solid rgba(255,255,255,.1);
+    border-radius:12px; padding:12px 15px; cursor:pointer; text-align:left;
+    color:rgba(255,255,255,.82); font-family:'Outfit',sans-serif; font-size:14px;
+    transition:all .18s;
+  }
+  .opt-btn:hover:not(:disabled) { background:rgba(59,130,214,.14); border-color:rgba(59,130,214,.5); color:#fff; transform:translateX(3px); }
+  .opt-btn:disabled { cursor:default; }
+  .opt-btn.correct  { background:rgba(34,197,94,.15);  border-color:var(--correct); color:#fff; }
+  .opt-btn.wrong    { background:rgba(239,68,68,.12);  border-color:var(--wrong);   color:rgba(255,255,255,.55); }
+  .opt-btn.reveal   { background:rgba(34,197,94,.08);  border-color:rgba(34,197,94,.4); }
+  .opt-letter {
+    flex-shrink:0; width:28px; height:28px; border-radius:8px;
+    background:rgba(255,255,255,.07); display:flex; align-items:center;
+    justify-content:center; font-weight:700; font-size:13px;
+    color:rgba(255,255,255,.4); transition:all .18s;
+  }
+  .opt-btn.correct  .opt-letter { background:var(--correct); color:#fff; }
+  .opt-btn.wrong    .opt-letter { background:var(--wrong);   color:#fff; }
+
+  /* ── OPEN ANSWER ── */
+  .open-wrap { display:flex; flex-direction:column; gap:12px; }
+  .open-input {
+    width:100%; padding:14px 16px;
+    background:rgba(255,255,255,.06); border:1.5px solid rgba(255,255,255,.15);
+    border-radius:12px; color:#fff; font-family:'Outfit',sans-serif; font-size:16px;
+    outline:none; transition:border-color .2s, background .2s;
+  }
+  .open-input:focus { border-color:rgba(59,130,214,.7); background:rgba(255,255,255,.09); }
+  .open-input.inp-ok  { border-color:var(--correct); background:rgba(34,197,94,.1); }
+  .open-input.inp-err { border-color:var(--wrong);   background:rgba(239,68,68,.08); }
+  .conf-btn {
+    padding:13px; background:linear-gradient(135deg,var(--blue),var(--navy2));
+    border:1px solid rgba(59,130,214,.4); border-radius:12px;
+    color:#fff; font-family:'Outfit',sans-serif; font-size:14px; font-weight:700;
+    letter-spacing:1px; cursor:pointer; transition:all .2s;
+  }
+  .conf-btn:disabled { opacity:.4; cursor:default; }
+
+  /* ── FEEDBACK ── */
+  .feedback { margin-top:16px; padding:12px 16px; border-radius:12px; font-size:14px; display:none; animation:fadeUp .25s ease; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+  .fb-ok  { background:rgba(34,197,94,.1);  border:1px solid rgba(34,197,94,.3);  color:#a7f3c4; }
+  .fb-err { background:rgba(239,68,68,.1);  border:1px solid rgba(239,68,68,.3);  color:#fca5a5; }
+  .fb-title { font-weight:700; font-size:15px; margin-bottom:2px; }
+  .fb-legend { font-size:12px; font-style:italic; margin-top:6px; opacity:.85; }
+
+  /* ── NEXT BTN ── */
+  .next-btn {
+    display:none; margin-top:18px; width:100%; padding:13px;
+    background:linear-gradient(135deg,var(--blue),var(--navy2));
+    border:1px solid rgba(59,130,214,.4); border-radius:12px;
+    color:#fff; font-family:'Outfit',sans-serif; font-size:14px; font-weight:700;
+    letter-spacing:1px; cursor:pointer; transition:all .2s;
+  }
+  .next-btn:hover { background:linear-gradient(135deg,var(--blue2),var(--blue)); transform:translateY(-1px); }
+
+  /* ── NAME SCREEN ── */
+  #screen-name { display:flex; flex-direction:column; align-items:center; padding-top:60px; }
+  .name-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:20px; padding:36px 28px; width:100%; max-width:400px; display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .name-input { width:100%; padding:14px 16px; background:rgba(255,255,255,.06); border:1.5px solid rgba(255,255,255,.15); border-radius:12px; color:#fff; font-family:'Outfit',sans-serif; font-size:16px; outline:none; }
+  .start-btn { width:100%; padding:14px; background:linear-gradient(135deg,var(--green),#3d9140); border:none; border-radius:12px; color:#fff; font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; letter-spacing:1px; cursor:pointer; transition:all .2s; }
+  .start-btn:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(76,175,80,.35); }
+
+  /* ── RESULTS SCREEN ── */
+  #screen-results { display:none; }
+  .results-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:24px; padding:40px 28px; text-align:center; }
+  .ring-wrap { position:relative; width:150px; height:150px; margin:0 auto 22px; }
+  .ring-wrap svg { transform:rotate(-90deg); }
+  .ring-num { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .ring-big { font-family:'Bebas Neue',sans-serif; font-size:54px; line-height:1; }
+  .ring-small { font-size:12px; color:rgba(255,255,255,.4); }
+  .res-title { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:2px; margin-bottom:8px; }
+  .res-msg { font-size:14px; color:rgba(255,255,255,.5); margin-bottom:28px; line-height:1.6; }
+  .stats-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:28px; }
+  .stat-box { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:14px; padding:16px 8px; }
+  .stat-val { display:block; font-family:'Bebas Neue',sans-serif; font-size:34px; line-height:1; margin-bottom:4px; }
+  .c-green { color:var(--correct); }
+  .c-red   { color:var(--wrong); }
+  .c-blue  { color:var(--blue2); }
+  .res-note { font-size:12px; color:rgba(255,255,255,.2); margin-top:16px; }
+  .saving-msg { font-size:13px; color:rgba(255,255,255,.4); margin-top:12px; }
+
+  /* ── CONFIG NOTICE ── */
+  .config-notice { background:rgba(240,165,0,.1); border:1px solid rgba(240,165,0,.3); border-radius:12px; padding:14px 16px; font-size:13px; color:#ffd166; margin-bottom:20px; line-height:1.5; }
+</style>
+</head>
+<body>
+
+<!-- ══ NAME SCREEN ══════════════════════════════════════════ -->
+<div class="wrap" id="screen-name">
+  <div class="header">
+    <div class="brand-row">
+      <span class="b-sonalan">Sonalan</span>
+      <span class="b-hfp">▼ HFP</span>
+    </div>
+    <span class="b-gowan">GOWAN MEXICO</span>
+    <h1>QUIZ DE APERTURA</h1>
+  </div>
+
+  <div class="name-card">
+    <p style="font-size:14px;color:rgba(255,255,255,.5);text-align:center;line-height:1.6">
+      Pon a prueba lo que sabes sobre este herbicida.<br>Ingresa tu nombre para comenzar.
+    </p>
+    <input class="name-input" id="player-name" type="text" placeholder="Tu nombre completo..."
+           maxlength="60" autocomplete="off"/>
+    <button class="start-btn" onclick="startQuiz()">COMENZAR QUIZ →</button>
+    <p style="font-size:11px;color:rgba(255,255,255,.2);text-align:center">
+      10 preguntas · Con tiempo límite por pregunta
+    </p>
+  </div>
+</div>
+
+<!-- ══ QUIZ SCREEN ══════════════════════════════════════════ -->
+<div class="wrap" id="screen-quiz" style="display:none">
+  <div class="header" style="padding:20px 0 10px">
+    <div class="brand-row">
+      <span class="b-sonalan" style="font-size:28px">Sonalan</span>
+      <span class="b-hfp">▼ HFP</span>
+    </div>
+  </div>
+
+  <div class="score-live">Correctas: <span id="live-score">0</span> / <span id="live-total">0</span></div>
+
+  <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="prog-meta">
+    <span id="prog-label">Pregunta 1 de 10</span>
+    <span id="prog-pct">0%</span>
+  </div>
+
+  <div id="q-card"></div>
+</div>
+
+<!-- ══ RESULTS SCREEN ════════════════════════════════════════ -->
+<div class="wrap" id="screen-results">
+  <div class="header" style="padding:20px 0 10px">
+    <div class="brand-row">
+      <span class="b-sonalan" style="font-size:28px">Sonalan</span>
+      <span class="b-hfp">▼ HFP</span>
+    </div>
+  </div>
+  <div class="results-card">
+    <div class="ring-wrap">
+      <svg width="150" height="150" viewBox="0 0 150 150">
+        <circle cx="75" cy="75" r="64" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="11"/>
+        <circle id="ring-arc" cx="75" cy="75" r="64" fill="none"
+                stroke="url(#rg)" stroke-width="11" stroke-linecap="round"
+                stroke-dasharray="402" stroke-dashoffset="402"
+                style="transition:stroke-dashoffset 1s ease .3s"/>
+        <defs>
+          <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1e5ca8"/>
+            <stop offset="100%" stop-color="#5cb85c"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="ring-num">
+        <span class="ring-big" id="res-score">0</span>
+        <span class="ring-small">de 10</span>
+      </div>
+    </div>
+    <div class="res-title" id="res-title">¡BUEN INTENTO!</div>
+    <p class="res-msg" id="res-msg"></p>
+    <div class="stats-row">
+      <div class="stat-box"><span class="stat-val c-green" id="res-correct">0</span><span style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3)">Correctas</span></div>
+      <div class="stat-box"><span class="stat-val c-red"   id="res-wrong">0</span>  <span style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3)">Incorrectas</span></div>
+      <div class="stat-box"><span class="stat-val c-blue"  id="res-pct">0%</span>   <span style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3)">Precisión</span></div>
+    </div>
+    <div class="saving-msg" id="saving-msg">Guardando tus respuestas...</div>
+    <p class="res-note" id="res-note"></p>
+  </div>
+</div>
+
+<script>
+// ══ CONFIGURACIÓN ═══════════════════════════════════════════
+// ⚠️ REEMPLAZA esta URL con la de tu Google Apps Script Web App
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyi-kDqWHPvXVymJHVCcoaZ6EHEbRLJIUtwO0-fcPExpKHXt6AjEPlkLpq6Uv-hv6Id/exec";
+// ════════════════════════════════════════════════════════════
+
+const QUESTIONS = [
+  {
+    id:1, tag:"b", tagLabel:"BÁSICA",
+    text:"¿Cuál es el ingrediente activo de Sonalan HFP?",
+    options:["Glifosato","Etalfluralina","Pendimetalina","Atrazina"],
+    correct:1
+  },
+  {
+    id:2, tag:"b", tagLabel:"BÁSICA",
+    text:"¿En qué tipo de formulación se presenta Sonalan HFP?",
+    options:["Polvo Mojable (WP)","Granulado Dispersable (WG)","Concentrado Emulsionable (CE)","Suspensión Concentrada (SC)"],
+    correct:2
+  },
+  {
+    id:3, tag:"b", tagLabel:"BÁSICA", type:"open",
+    text:"¿Qué significan las siglas HFP en Sonalan HFP?",
+    correctAnswers:["high flash point"],
+    displayAnswer:"High Flash Point",
+    timerSeconds:30
+  },
+  {
+    id:4, tag:"t", tagLabel:"TÉCNICA",
+    text:"¿Cuáles son las diferencias de una formulación High Flash Point?",
+    options:[
+      "Mayor riesgo de incendio o explosión durante almacenamiento, transporte, mezcla y aplicación.",
+      "Mayor compatibilidad con herbicidas preemergentes con ingredientes activos lipofílicos.",
+      "Menor compatibilidad con ingredientes activos lipofílicos.",
+      "B y E son correctas.",
+      "Menor riesgo de incendio o explosión durante almacenamiento, transporte, mezcla y aplicación."
+    ],
+    correct:3
+  },
+  {
+    id:5, tag:"b", tagLabel:"BÁSICA", type:"open",
+    text:"¿Cuál es la concentración de ingrediente activo de Sonalan HFP?",
+    correctAnswers:["36.10%","36.1%","371 g/l","371 g/L","371g/l","371g/L"],
+    displayAnswer:"36.10% — equivalente a 371 g/L",
+    timerSeconds:15
+  },
+  {
+    id:6, tag:"t", tagLabel:"TÉCNICA",
+    text:"¿A qué grupo de la HRAC pertenece Sonalan HFP?",
+    options:[
+      "Microtubule Interference.",
+      "Inhibition of Microtubule Assembly.",
+      "Inhibition of Glutamine Synthetase.",
+      "Auxin Transport Inhibitors."
+    ],
+    correct:1
+  },
+  {
+    id:7, tag:"b", tagLabel:"BÁSICA",
+    text:"¿Cuál es el tiempo de reentrada de Sonalan HFP?",
+    options:["4 horas.","12 horas.","6 horas.","8 horas."],
+    correct:1
+  },
+  {
+    id:8, tag:"t", tagLabel:"TÉCNICA",
+    text:"¿Cuál es la dosis recomendada de Sonalan HFP en suelo de textura pesada (arcilloso)?",
+    options:["1.0 – 1.5 L/ha","2.0 – 2.5 L/ha","2.5 – 3.0 L/ha","3.0 – 4.0 L/ha"],
+    correct:3
+  },
+  {
+    id:9, tag:"t", tagLabel:"TÉCNICA",
+    text:"Sonalan HFP se puede aplicar en cebolla y papa.",
+    options:["Cierto.","Falso."],
+    correct:0,
+    legend:"Sonalan tiene tolerancias EPA en estos cultivos."
+  },
+  {
+    id:10, tag:"p", tagLabel:"A PENSAR",
+    text:"¿En cuál de estas situaciones el uso de Sonalan HFP está CONTRAINDICADO?",
+    options:[
+      "En cultivos de calabacita con textura de suelo media",
+      "En pre-trasplante de chile jalapeño con pH 5.8",
+      "Bajo acolchado plástico y altas temperaturas.",
+      "En leguminosas incorporado al suelo"
+    ],
+    correct:2
+  }
+];
+
+const LETTERS = ["A","B","C","D","E"];
+let currentQ = 0, correctCount = 0, answeredCount = 0;
+let answers = [];
+let timerInterval = null;
+let playerName = "";
+let locked = false;
+
+// ── START ──────────────────────────────────────────────────
+function startQuiz() {
+  playerName = document.getElementById("player-name").value.trim();
+  if (!playerName) { alert("Por favor ingresa tu nombre."); return; }
+  document.getElementById("screen-name").style.display = "none";
+  document.getElementById("screen-quiz").style.display = "block";
+  renderQuestion();
+}
+
+// ── RENDER ─────────────────────────────────────────────────
+function renderQuestion() {
+  locked = false;
+  const q = QUESTIONS[currentQ];
+  const isOpen = q.type === "open";
+  const timer = isOpen ? q.timerSeconds : 20;
+  const tagClass = "tag-" + q.tag;
+
+  const timerHTML = `
+    <div class="timer-row">
+      <div class="timer-circle">
+        <svg width="50" height="50" viewBox="0 0 50 50">
+          <circle cx="25" cy="25" r="21" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="4"/>
+          <circle id="t-ring" cx="25" cy="25" r="21" fill="none" stroke="#3b82d6"
+                  stroke-width="4" stroke-linecap="round"
+                  stroke-dasharray="132" stroke-dashoffset="0"
+                  style="transition:stroke-dashoffset 1s linear,stroke .3s"/>
+        </svg>
+        <div class="timer-num" id="t-num">${timer}</div>
+      </div>
+      <div class="timer-label">
+        <strong>${isOpen ? "Respuesta abierta" : "Opción múltiple"}</strong>
+        Responde antes de que termine el tiempo
+      </div>
+    </div>`;
+
+  const bodyHTML = isOpen ? `
+    <div class="open-wrap">
+      <input class="open-input" id="open-inp" type="text"
+             placeholder="Escribe tu respuesta..."
+             onkeydown="if(event.key==='Enter')submitOpen()"/>
+      <button class="conf-btn" id="conf-btn" onclick="submitOpen()">CONFIRMAR RESPUESTA</button>
+    </div>` : `
+    <div class="options" id="opts">
+      ${q.options.map((o,i)=>`
+        <button class="opt-btn" onclick="selectMC(${i})">
+          <span class="opt-letter">${LETTERS[i]}</span>
+          <span>${o}</span>
+        </button>`).join("")}
+    </div>`;
+
+  document.getElementById("q-card").innerHTML = `
+    <div class="card">
+      <div class="q-meta">
+        <span class="q-num">PREGUNTA ${currentQ+1} / ${QUESTIONS.length}</span>
+        <span class="q-tag ${tagClass}">${q.tagLabel}</span>
+      </div>
+      <div class="q-text">${q.text}</div>
+      ${timerHTML}
+      ${bodyHTML}
+      <div class="feedback" id="fb"></div>
+      <button class="next-btn" id="next-btn" onclick="nextQuestion()">
+        ${currentQ < QUESTIONS.length-1 ? "SIGUIENTE PREGUNTA →" : "VER MI RESULTADO →"}
+      </button>
+    </div>`;
+
+  updateProgress();
+  startTimer(timer, isOpen);
+  if (isOpen) document.getElementById("open-inp")?.focus();
+}
+
+// ── TIMER ──────────────────────────────────────────────────
+function startTimer(seconds, isOpen) {
+  clearInterval(timerInterval);
+  let rem = seconds;
+  const C = 132;
+  timerInterval = setInterval(() => {
+    rem--;
+    const ring = document.getElementById("t-ring");
+    const num  = document.getElementById("t-num");
+    if (!ring) { clearInterval(timerInterval); return; }
+    num.textContent = rem;
+    ring.style.strokeDashoffset = C * (1 - rem/seconds);
+    const urgentAt = seconds <= 15 ? 5 : 7;
+    if (rem <= urgentAt) { ring.style.stroke = "#ef4444"; num.classList.add("urgent"); }
+    if (rem <= 0) { clearInterval(timerInterval); isOpen ? timeoutOpen() : timeoutMC(); }
+  }, 1000);
+}
+
+// ── MC SELECT ──────────────────────────────────────────────
+function selectMC(i) {
+  if (locked) return;
+  clearInterval(timerInterval);
+  locked = true;
+  const q = QUESTIONS[currentQ];
+  const btns = document.querySelectorAll(".opt-btn");
+  btns.forEach(b => b.disabled = true);
+  const isCorrect = i === q.correct;
+  if (isCorrect) correctCount++;
+  btns[i].classList.add(isCorrect ? "correct" : "wrong");
+  if (!isCorrect) btns[q.correct].classList.add("reveal");
+  answeredCount++;
+  answers.push({ qId: q.id, correct: isCorrect, timedOut: false });
+  showFeedback(isCorrect, false, null, q.legend);
+}
+
+function timeoutMC() {
+  if (locked) return;
+  locked = true;
+  const q = QUESTIONS[currentQ];
+  const btns = document.querySelectorAll(".opt-btn");
+  btns.forEach(b => b.disabled = true);
+  if (btns[q.correct]) btns[q.correct].classList.add("reveal");
+  answeredCount++;
+  answers.push({ qId: q.id, correct: false, timedOut: true });
+  showFeedback(false, true);
+}
+
+// ── OPEN SUBMIT ────────────────────────────────────────────
+function submitOpen() {
+  if (locked) return;
+  clearInterval(timerInterval);
+  locked = true;
+  const q = QUESTIONS[currentQ];
+  const inp = document.getElementById("open-inp");
+  const val = inp.value.trim().toLowerCase();
+  const isCorrect = (q.correctAnswers || []).some(a => a.toLowerCase() === val);
+  if (isCorrect) correctCount++;
+  inp.classList.add(isCorrect ? "inp-ok" : "inp-err");
+  inp.disabled = true;
+  document.getElementById("conf-btn").disabled = true;
+  answeredCount++;
+  answers.push({ qId: q.id, correct: isCorrect, timedOut: false });
+  showFeedback(isCorrect, false, isCorrect ? null : q.displayAnswer);
+}
+
+function timeoutOpen() {
+  if (locked) return;
+  locked = true;
+  const q = QUESTIONS[currentQ];
+  const inp = document.getElementById("open-inp");
+  if (inp) { inp.disabled = true; inp.classList.add("inp-err"); }
+  const cb = document.getElementById("conf-btn");
+  if (cb) cb.disabled = true;
+  const ring = document.getElementById("t-ring");
+  const num  = document.getElementById("t-num");
+  if (ring) ring.style.stroke = "#ef4444";
+  if (num)  { num.textContent = "0"; num.classList.add("urgent"); }
+  answeredCount++;
+  answers.push({ qId: q.id, correct: false, timedOut: true });
+  showFeedback(false, true, q.displayAnswer);
+}
+
+// ── FEEDBACK ───────────────────────────────────────────────
+function showFeedback(correct, timedOut, displayAnswer, legend) {
+  const fb = document.getElementById("fb");
+  fb.className = "feedback " + (correct ? "fb-ok" : "fb-err");
+  let html = `<div class="fb-title">`;
+  if (timedOut) html += "⏱ Tiempo agotado — Incorrecto";
+  else if (correct) html += "✓ ¡Correcto!";
+  else html += "✗ Incorrecto" + (displayAnswer ? ` — Respuesta: <strong>${displayAnswer}</strong>` : "");
+  html += "</div>";
+  if (legend) html += `<div class="fb-legend">ℹ️ ${legend}</div>`;
+  fb.innerHTML = html;
+  fb.style.display = "block";
+  document.getElementById("next-btn").style.display = "block";
+  document.getElementById("live-score").textContent = correctCount;
+  document.getElementById("live-total").textContent = answeredCount;
+}
+
+// ── NEXT ───────────────────────────────────────────────────
+function nextQuestion() {
+  clearInterval(timerInterval);
+  currentQ++;
+  if (currentQ < QUESTIONS.length) {
+    renderQuestion();
+    window.scrollTo({ top:0, behavior:"smooth" });
+  } else {
+    showResults();
+  }
+}
+
+// ── PROGRESS ───────────────────────────────────────────────
+function updateProgress() {
+  const pct = Math.round((currentQ / QUESTIONS.length) * 100);
+  document.getElementById("prog-fill").style.width = pct + "%";
+  document.getElementById("prog-label").textContent = `Pregunta ${currentQ+1} de ${QUESTIONS.length}`;
+  document.getElementById("prog-pct").textContent = pct + "%";
+}
+
+// ── RESULTS ────────────────────────────────────────────────
+async function showResults() {
+  document.getElementById("screen-quiz").style.display = "none";
+  document.getElementById("screen-results").style.display = "block";
+  window.scrollTo({ top:0, behavior:"smooth" });
+
+  const pct = Math.round((correctCount / QUESTIONS.length) * 100);
+  const C = 402;
+  document.getElementById("res-score").textContent = correctCount;
+  document.getElementById("res-correct").textContent = correctCount;
+  document.getElementById("res-wrong").textContent = QUESTIONS.length - correctCount;
+  document.getElementById("res-pct").textContent = pct + "%";
+  setTimeout(() => {
+    document.getElementById("ring-arc").style.strokeDashoffset = C * (1 - pct/100);
+  }, 100);
+
+  const titles = { 90:"¡EXCELENTE DOMINIO!", 70:"¡MUY BUEN RESULTADO!", 50:"¡BUEN COMIENZO!", 0:"AQUÍ EMPIEZA EL APRENDIZAJE" };
+  const msgs = {
+    90:"Claramente ya tienes una sólida base sobre Sonalan HFP.",
+    70:"Tienes buena base. El curso reforzará los puntos donde tuviste dudas.",
+    50:"Este resultado es normal al inicio. El curso responderá tus dudas.",
+    0:"No te preocupes — al finalizar el curso estas preguntas serán muy fáciles."
+  };
+  const lvl = pct >= 90 ? 90 : pct >= 70 ? 70 : pct >= 50 ? 50 : 0;
+  document.getElementById("res-title").textContent = titles[lvl];
+  document.getElementById("res-msg").textContent = msgs[lvl];
+
+  // Enviar a Google Sheets
+  await sendResults(pct);
+}
+
+async function sendResults(pct) {
+  const savingEl = document.getElementById("saving-msg");
+  const noteEl   = document.getElementById("res-note");
+
+  if (APPS_SCRIPT_URL === "PEGA_AQUI_TU_URL_DE_APPS_SCRIPT") {
+    savingEl.style.color = "#ffd166";
+    savingEl.textContent = "⚠️ URL de Apps Script no configurada.";
+    return;
+  }
+
+  try {
+    savingEl.textContent = "Guardando tus respuestas...";
+    await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({
+        playerName, score: correctCount,
+        total: QUESTIONS.length, pct,
+        answers
+      })
+    });
+    savingEl.style.color = "#a7f3c4";
+    savingEl.textContent = "✓ Respuestas guardadas correctamente.";
+    noteEl.textContent = "El facilitador puede ver tu resultado en el dashboard.";
+  } catch(e) {
+    savingEl.style.color = "#fca5a5";
+    savingEl.textContent = "No se pudo guardar. Verifica tu conexión.";
+  }
+}
+</script>
+</body>
+</html>
