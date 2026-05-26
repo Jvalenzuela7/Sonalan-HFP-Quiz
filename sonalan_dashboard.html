@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard – Sonalan HFP Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0d2545; --navy2: #163760; --blue: #1e5ca8; --blue2: #3b82d6;
+    --green: #5cb85c; --correct: #22c55e; --wrong: #ef4444; --gold: #f0a500;
+    --white: #f0f6ff;
+  }
+  body {
+    background: var(--navy);
+    font-family: 'Outfit', sans-serif;
+    color: var(--white);
+    min-height: 100vh;
+  }
+  body::before {
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(ellipse at 10% 0%, rgba(30,92,168,.3) 0%, transparent 55%),
+      radial-gradient(ellipse at 90% 100%, rgba(76,175,80,.15) 0%, transparent 50%);
+  }
+
+  /* ── HEADER ── */
+  .header {
+    position: relative; z-index:1;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 28px;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    background: rgba(0,0,0,.2);
+  }
+  .brand-row { display:flex; align-items:center; gap:12px; }
+  .b-sonalan { font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:2px; }
+  .b-hfp { font-size:11px; font-weight:700; letter-spacing:3px; color:var(--green);
+    background:rgba(76,175,80,.12); border:1px solid rgba(76,175,80,.3);
+    padding:3px 9px; border-radius:4px; }
+  .b-gowan { font-size:10px; letter-spacing:4px; color:rgba(255,255,255,.3); margin-top:2px; }
+  .header-right { text-align:right; }
+  .dash-title { font-size:13px; font-weight:700; letter-spacing:2px; color:var(--blue2); }
+  .last-update { font-size:11px; color:rgba(255,255,255,.3); margin-top:3px; }
+
+  /* ── BODY ── */
+  .body { position:relative; z-index:1; padding:24px 28px; }
+
+  /* ── CONTROLS ── */
+  .controls { display:flex; align-items:center; gap:10px; margin-bottom:22px; flex-wrap:wrap; }
+  .ctrl-btn {
+    padding:8px 16px; border-radius:8px; font-family:'Outfit',sans-serif;
+    font-size:12px; font-weight:600; letter-spacing:.5px; cursor:pointer;
+    border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.05);
+    color:rgba(255,255,255,.6); transition:all .2s;
+  }
+  .ctrl-btn:hover { background:rgba(255,255,255,.1); color:#fff; }
+  .ctrl-btn.active { background:rgba(34,197,94,.15); border-color:var(--correct); color:var(--correct); }
+  .participants-badge {
+    margin-left:auto; font-size:13px; color:rgba(255,255,255,.35);
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
+    padding:6px 14px; border-radius:8px;
+  }
+  .participants-badge span { color:var(--blue2); font-weight:700; font-size:16px; }
+
+  /* ── KPI GRID ── */
+  .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
+  .kpi-card {
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+    border-radius:16px; padding:20px 16px;
+    display:flex; flex-direction:column; align-items:center; gap:5px;
+    transition: border-color .3s;
+  }
+  .kpi-card:hover { border-color:rgba(255,255,255,.15); }
+  .kpi-val { font-family:'Bebas Neue',sans-serif; font-size:42px; line-height:1; }
+  .kpi-lbl { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,.3); text-align:center; }
+  .c-blue  { color:var(--blue2); }
+  .c-green { color:var(--correct); }
+  .c-gold  { color:var(--gold); }
+
+  /* ── TWO COL ── */
+  .two-col { display:grid; grid-template-columns:1.2fr 1fr; gap:16px; }
+  .panel {
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+    border-radius:16px; padding:20px;
+  }
+  .panel-title {
+    font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+    color:rgba(255,255,255,.35); margin-bottom:18px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+
+  /* ── QUESTION BARS ── */
+  .q-row { margin-bottom:16px; }
+  .q-row-meta { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:6px; }
+  .q-row-text { font-size:12px; color:rgba(255,255,255,.55); line-height:1.4; flex:1; }
+  .q-row-text strong { color:rgba(255,255,255,.8); }
+  .q-row-count { font-size:11px; color:rgba(255,255,255,.3); flex-shrink:0; }
+  .bar-wrap { display:flex; align-items:center; gap:8px; }
+  .bar-track { flex:1; height:8px; background:rgba(255,255,255,.06); border-radius:99px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:99px; transition:width .8s ease; }
+  .bar-pct { font-size:12px; font-weight:700; min-width:36px; text-align:right; }
+  .timeout-note { font-size:10px; color:rgba(239,68,68,.6); margin-top:3px; }
+
+  /* ── RIGHT COLUMN ── */
+  .right-col { display:flex; flex-direction:column; gap:14px; }
+
+  /* ── LEADERBOARD ── */
+  .lb-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.04); }
+  .lb-rank { font-family:'Bebas Neue',sans-serif; font-size:22px; min-width:28px; }
+  .lb-name { flex:1; font-size:14px; color:rgba(255,255,255,.8); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .lb-score { font-weight:700; font-size:14px; }
+
+  /* ── DISTRIBUTION ── */
+  .dist-chart { display:flex; align-items:flex-end; gap:5px; height:70px; margin-bottom:6px; }
+  .dist-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .dist-bar { width:100%; background:var(--blue); border-radius:4px 4px 0 0; transition:height .6s ease; min-height:2px; }
+  .dist-lbl { font-size:9px; color:rgba(255,255,255,.3); }
+  .dist-count { font-size:9px; color:rgba(255,255,255,.5); }
+
+  /* ── PARTICIPANTS LIST ── */
+  .part-list { max-height:180px; overflow-y:auto; }
+  .part-row { display:flex; justify-content:space-between; align-items:center;
+    padding:6px 0; border-bottom:1px solid rgba(255,255,255,.04); font-size:12px; }
+  .part-name { color:rgba(255,255,255,.7); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:160px; }
+  .part-score { font-weight:700; }
+
+  /* ── LIVE INDICATOR ── */
+  .live-dot { width:8px; height:8px; border-radius:50%; background:var(--correct); display:inline-block; margin-right:6px; animation:pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* ── EMPTY STATE ── */
+  .empty { color:rgba(255,255,255,.2); font-size:13px; text-align:center; padding:20px 0; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:rgba(255,255,255,.15); border-radius:99px; }
+
+  @media (max-width:900px) {
+    .kpi-grid { grid-template-columns:repeat(2,1fr); }
+    .two-col { grid-template-columns:1fr; }
+    .body { padding:16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="brand-row">
+      <span class="b-sonalan">Sonalan</span>
+      <span class="b-hfp">▼ HFP</span>
+    </div>
+    <div class="b-gowan">GOWAN MEXICO</div>
+  </div>
+  <div class="header-right">
+    <div class="dash-title">📊 DASHBOARD FACILITADOR</div>
+    <div class="last-update" id="last-update">Conectando...</div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="body">
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="ctrl-btn active" id="btn-auto" onclick="toggleAuto()">
+      <span class="live-dot"></span>Auto-actualización ON
+    </button>
+    <button class="ctrl-btn" onclick="loadData()">↻ Actualizar ahora</button>
+    <div class="participants-badge">
+      Participantes: <span id="total-count">0</span>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <span class="kpi-val c-blue" id="kpi-total">0</span>
+      <span class="kpi-lbl">Participantes</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-val" id="kpi-avg" style="color:#f0a500">—</span>
+      <span class="kpi-lbl">Promedio de aciertos</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-val" id="kpi-pct" style="color:#f0a500">—</span>
+      <span class="kpi-lbl">Precisión promedio</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-val c-green" id="kpi-perfect">0</span>
+      <span class="kpi-lbl">Puntaje perfecto 10/10</span>
+    </div>
+  </div>
+
+  <!-- Main grid -->
+  <div class="two-col">
+
+    <!-- Question breakdown -->
+    <div class="panel">
+      <div class="panel-title">
+        Resultados por Pregunta
+        <span style="font-size:10px;color:rgba(255,255,255,.2);font-weight:400">correctas / respondidas</span>
+      </div>
+      <div id="q-breakdown">
+        <div class="empty">Esperando respuestas...</div>
+      </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="right-col">
+
+      <!-- Leaderboard -->
+      <div class="panel">
+        <div class="panel-title">🏆 Top 5 Participantes</div>
+        <div id="leaderboard">
+          <div class="empty">Sin respuestas aún.</div>
+        </div>
+      </div>
+
+      <!-- Distribution -->
+      <div class="panel">
+        <div class="panel-title">Distribución de Puntajes</div>
+        <div class="dist-chart" id="dist-chart"></div>
+        <div style="font-size:10px;color:rgba(255,255,255,.2);text-align:center">Número de aciertos (0 – 10)</div>
+      </div>
+
+      <!-- All participants -->
+      <div class="panel">
+        <div class="panel-title">Todos los participantes <span id="part-count" style="color:rgba(255,255,255,.4);font-weight:400"></span></div>
+        <div class="part-list" id="part-list">
+          <div class="empty">Esperando respuestas...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ CONFIGURACIÓN ═══════════════════════════════════════════
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyi-kDqWHPvXVymJHVCcoaZ6EHEbRLJIUtwO0-fcPExpKHXt6AjEPlkLpq6Uv-hv6Id/exec";
+// ════════════════════════════════════════════════════════════
+
+const Q_LABELS = [
+  "¿Cuál es el ingrediente activo?",
+  "¿En qué formulación se presenta?",
+  "¿Qué significan las siglas HFP?",
+  "¿Diferencias de formulación High Flash Point?",
+  "¿Cuál es la concentración de I.A.?",
+  "¿A qué grupo HRAC pertenece?",
+  "¿Cuál es el tiempo de reentrada?",
+  "¿Dosis en suelo de textura pesada?",
+  "¿Se puede aplicar en cebolla y papa?",
+  "¿Cuál situación está CONTRAINDICADA?"
+];
+
+let autoRefresh = true;
+let refreshInterval = null;
+let lastData = [];
+
+function toggleAuto() {
+  autoRefresh = !autoRefresh;
+  const btn = document.getElementById("btn-auto");
+  if (autoRefresh) {
+    btn.classList.add("active");
+    btn.innerHTML = '<span class="live-dot"></span>Auto-actualización ON';
+    startInterval();
+  } else {
+    btn.classList.remove("active");
+    btn.innerHTML = '○ Auto-actualización OFF';
+    clearInterval(refreshInterval);
+  }
+}
+
+function startInterval() {
+  clearInterval(refreshInterval);
+  refreshInterval = setInterval(loadData, 8000);
+}
+
+async function loadData() {
+  try {
+    const url = APPS_SCRIPT_URL + "?action=getResults&t=" + Date.now();
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json.status === "ok") {
+      lastData = json.rows || [];
+      renderDashboard(lastData);
+      document.getElementById("last-update").textContent =
+        "Actualizado: " + new Date().toLocaleTimeString("es-MX");
+    }
+  } catch(e) {
+    document.getElementById("last-update").textContent = "Error al conectar — reintentando...";
+  }
+}
+
+function pctColor(p) {
+  if (p >= 70) return "#22c55e";
+  if (p >= 40) return "#f0a500";
+  return "#ef4444";
+}
+
+function renderDashboard(rows) {
+  const total = rows.length;
+
+  // ── KPIs ──
+  document.getElementById("kpi-total").textContent = total;
+  document.getElementById("total-count").textContent = total;
+
+  if (total > 0) {
+    const scores = rows.map(r => parseInt(r["Score"]) || 0);
+    const pcts   = rows.map(r => parseInt(r["Porcentaje"]) || 0);
+    const avg    = (scores.reduce((a,b)=>a+b,0) / total).toFixed(1);
+    const avgPct = Math.round(pcts.reduce((a,b)=>a+b,0) / total);
+    const perfect = rows.filter(r => parseInt(r["Score"]) === 10).length;
+
+    const avgEl = document.getElementById("kpi-avg");
+    avgEl.textContent = avg + "/10";
+    avgEl.style.color = pctColor(avgPct);
+
+    const pctEl = document.getElementById("kpi-pct");
+    pctEl.textContent = avgPct + "%";
+    pctEl.style.color = pctColor(avgPct);
+
+    document.getElementById("kpi-perfect").textContent = perfect;
+  } else {
+    document.getElementById("kpi-avg").textContent = "—";
+    document.getElementById("kpi-pct").textContent = "—";
+    document.getElementById("kpi-perfect").textContent = "0";
+  }
+
+  // ── QUESTION BREAKDOWN ──
+  const qDiv = document.getElementById("q-breakdown");
+  if (total === 0) {
+    qDiv.innerHTML = '<div class="empty">Esperando respuestas...</div>';
+  } else {
+    qDiv.innerHTML = Q_LABELS.map((lbl, i) => {
+      const col = "P" + (i+1);
+      const attempted = rows.filter(r => r[col] && r[col] !== "—").length;
+      const correct   = rows.filter(r => r[col] === "✓").length;
+      const timedOut  = rows.filter(r => r[col] === "✗").length;
+      const pct = attempted === 0 ? 0 : Math.round((correct/attempted)*100);
+      const color = pctColor(pct);
+      return `
+        <div class="q-row">
+          <div class="q-row-meta">
+            <span class="q-row-text"><strong>P${i+1}.</strong> ${lbl}</span>
+            <span class="q-row-count">${correct}/${attempted}</span>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${pct}%;background:${color}"></div>
+            </div>
+            <span class="bar-pct" style="color:${color}">${pct}%</span>
+          </div>
+        </div>`;
+    }).join("");
+  }
+
+  // ── LEADERBOARD ──
+  const lbDiv = document.getElementById("leaderboard");
+  if (total === 0) {
+    lbDiv.innerHTML = '<div class="empty">Sin respuestas aún.</div>';
+  } else {
+    const rankColors = ["#f0a500","#adb5bd","#cd7f32","rgba(255,255,255,.25)","rgba(255,255,255,.25)"];
+    const top5 = [...rows].sort((a,b) => (parseInt(b.Score)||0) - (parseInt(a.Score)||0)).slice(0,5);
+    lbDiv.innerHTML = top5.map((r,i) => {
+      const score = parseInt(r.Score) || 0;
+      const pct = parseInt(r.Porcentaje) || 0;
+      return `
+        <div class="lb-row">
+          <span class="lb-rank" style="color:${rankColors[i]}">${i+1}</span>
+          <span class="lb-name">${r.Nombre || "—"}</span>
+          <span class="lb-score" style="color:${pctColor(pct)}">${score}/10</span>
+        </div>`;
+    }).join("");
+  }
+
+  // ── DISTRIBUTION ──
+  const distDiv = document.getElementById("dist-chart");
+  const dist = Array.from({length:11},(_,s)=>({ s, count: rows.filter(r=>parseInt(r.Score)===s).length }));
+  const maxCount = Math.max(...dist.map(d=>d.count), 1);
+  distDiv.innerHTML = dist.map(d => {
+    const h = d.count > 0 ? Math.round((d.count/maxCount)*60)+6 : 3;
+    const color = d.s >= 7 ? "#22c55e" : d.s >= 4 ? "#f0a500" : "#ef4444";
+    return `
+      <div class="dist-col">
+        <span class="dist-count">${d.count > 0 ? d.count : ""}</span>
+        <div class="dist-bar" style="height:${h}px;background:${color}"></div>
+        <span class="dist-lbl">${d.s}</span>
+      </div>`;
+  }).join("");
+
+  // ── PARTICIPANTS LIST ──
+  document.getElementById("part-count").textContent = `(${total})`;
+  const partDiv = document.getElementById("part-list");
+  if (total === 0) {
+    partDiv.innerHTML = '<div class="empty">Esperando respuestas...</div>';
+  } else {
+    partDiv.innerHTML = [...rows]
+      .sort((a,b) => new Date(b.Timestamp) - new Date(a.Timestamp))
+      .map(r => {
+        const score = parseInt(r.Score) || 0;
+        const pct   = parseInt(r.Porcentaje) || 0;
+        return `
+          <div class="part-row">
+            <span class="part-name">${r.Nombre || "—"}</span>
+            <span class="part-score" style="color:${pctColor(pct)}">${score}/10 · ${pct}%</span>
+          </div>`;
+      }).join("");
+  }
+}
+
+// ── INIT ──
+loadData();
+startInterval();
+</script>
+</body>
+</html>
