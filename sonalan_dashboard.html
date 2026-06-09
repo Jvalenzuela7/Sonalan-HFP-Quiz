@@ -348,9 +348,8 @@ function renderDashboard(rows) {
   } else {
     qDiv.innerHTML = Q_LABELS.map((lbl, i) => {
       const col = "P" + (i+1);
-      const attempted = rows.filter(r => r[col] && r[col] !== "—").length;
-      const correct   = rows.filter(r => r[col] === "✓").length;
-      const timedOut  = rows.filter(r => r[col] === "✗").length;
+      const attempted = rows.filter(r => r[col] && String(r[col]).trim() !== "—" && String(r[col]).trim() !== "").length;
+      const correct   = rows.filter(r => String(r[col]).trim() === "✓" || String(r[col]).trim() === "TRUE" || String(r[col]).trim() === "true").length;
       const pct = attempted === 0 ? 0 : Math.round((correct/attempted)*100);
       const color = pctColor(pct);
       return `
@@ -390,7 +389,7 @@ function renderDashboard(rows) {
 
   // ── DISTRIBUTION ──
   const distDiv = document.getElementById("dist-chart");
-  const dist = Array.from({length:21},(_,s)=>({ s, count: rows.filter(r=>parseInt(r.Score)===s).length }));
+  const dist = Array.from({length:20},(_,s)=>({ s: s+1, count: rows.filter(r=>parseInt(r.Score)===(s+1)).length }));
   const maxCount = Math.max(...dist.map(d=>d.count), 1);
   distDiv.innerHTML = dist.map(d => {
     const h = d.count > 0 ? Math.round((d.count/maxCount)*60)+6 : 3;
