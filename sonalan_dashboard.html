@@ -224,7 +224,7 @@
       <div class="panel">
         <div class="panel-title">Distribución de Puntajes</div>
         <div class="dist-chart" id="dist-chart"></div>
-        <div style="font-size:10px;color:rgba(255,255,255,.2);text-align:center">Número de aciertos (0 – 10)</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.2);text-align:center">Número de aciertos (0 – 20)</div>
       </div>
 
       <!-- All participants -->
@@ -390,11 +390,11 @@ function renderDashboard(rows) {
 
   // ── DISTRIBUTION ──
   const distDiv = document.getElementById("dist-chart");
-  const dist = Array.from({length:11},(_,s)=>({ s, count: rows.filter(r=>parseInt(r.Score)===s).length }));
+  const dist = Array.from({length:21},(_,s)=>({ s, count: rows.filter(r=>parseInt(r.Score)===s).length }));
   const maxCount = Math.max(...dist.map(d=>d.count), 1);
   distDiv.innerHTML = dist.map(d => {
     const h = d.count > 0 ? Math.round((d.count/maxCount)*60)+6 : 3;
-    const color = d.s >= 7 ? "#22c55e" : d.s >= 4 ? "#f0a500" : "#ef4444";
+    const color = d.s >= 14 ? "#22c55e" : d.s >= 8 ? "#f0a500" : "#ef4444";
     return `
       <div class="dist-col">
         <span class="dist-count">${d.count > 0 ? d.count : ""}</span>
