@@ -185,7 +185,7 @@
            maxlength="60" autocomplete="off"/>
     <button class="start-btn" onclick="startQuiz()">COMENZAR QUIZ →</button>
     <p style="font-size:11px;color:rgba(255,255,255,.2);text-align:center">
-      10 preguntas · Con tiempo límite por pregunta
+      20 preguntas · Con tiempo límite por pregunta
     </p>
   </div>
 </div>
@@ -235,7 +235,7 @@
       </svg>
       <div class="ring-num">
         <span class="ring-big" id="res-score">0</span>
-        <span class="ring-small">de 10</span>
+        <span class="ring-small">de 20</span>
       </div>
     </div>
     <div class="res-title" id="res-title">¡BUEN INTENTO!</div>
@@ -324,6 +324,17 @@ const QUESTIONS = [
     options:["Cierto.","Falso."],
     correct:0,
     legend:"Sonalan tiene tolerancias EPA en estos cultivos."
+  },
+  {
+    id:10, tag:"p", tagLabel:"A PENSAR",
+    text:"¿En cuál de estas situaciones el uso de Sonalan HFP está CONTRAINDICADO?",
+    options:[
+      "En cultivos de calabacita con textura de suelo media.",
+      "En pre-trasplante de chile jalapeño con pH 5.8.",
+      "Bajo acolchado plástico y altas temperaturas.",
+      "En leguminosas incorporado al suelo."
+    ],
+    correct:2
   },
   {
     id:11, tag:"t", tagLabel:"TÉCNICA",
@@ -458,7 +469,7 @@ function renderQuestion() {
   locked = false;
   const q = QUESTIONS[currentQ];
   const isOpen = q.type === "open";
-  const timer = isOpen ? q.timerSeconds : 20;
+  const timer = isOpen ? q.timerSeconds : (q.id >= 10 ? 60 : 20);
   const tagClass = "tag-" + q.tag;
 
   const timerHTML = `
@@ -526,7 +537,7 @@ function startTimer(seconds, isOpen) {
     if (!ring) { clearInterval(timerInterval); return; }
     num.textContent = rem;
     ring.style.strokeDashoffset = C * (1 - rem/seconds);
-    const urgentAt = seconds <= 15 ? 5 : 7;
+    const urgentAt = seconds <= 15 ? 5 : seconds <= 20 ? 7 : 15;
     if (rem <= urgentAt) { ring.style.stroke = "#ef4444"; num.classList.add("urgent"); }
     if (rem <= 0) { clearInterval(timerInterval); isOpen ? timeoutOpen() : timeoutMC(); }
   }, 1000);
