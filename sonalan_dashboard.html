@@ -241,7 +241,7 @@
 
 <script>
 // ══ CONFIGURACIÓN ═══════════════════════════════════════════
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzilCxOgUE-hh713_zAWR44BJupnSnDjr_5JLtlm6cJRPZyDSyTOglEE7Cj7jaxMtztZg/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAqQ89Tr1n2P5lZiTHNvryNI537_aHHGAugshGIKdbRMCS_lydNVJ6Oq54HusKvYDyYg/exec";
 // ════════════════════════════════════════════════════════════
 
 const Q_LABELS = [
@@ -348,8 +348,9 @@ function renderDashboard(rows) {
   } else {
     qDiv.innerHTML = Q_LABELS.map((lbl, i) => {
       const col = "P" + (i+1);
-      const attempted = rows.filter(r => r[col] && String(r[col]).trim() !== "—" && String(r[col]).trim() !== "").length;
-      const correct   = rows.filter(r => String(r[col]).trim() === "✓" || String(r[col]).trim() === "TRUE" || String(r[col]).trim() === "true").length;
+      const vals = rows.map(r => r[col] !== undefined ? String(r[col]).trim() : "—");
+      const attempted = vals.filter(v => v !== "—" && v !== "").length;
+      const correct = vals.filter(v => v === "1").length;
       const pct = attempted === 0 ? 0 : Math.round((correct/attempted)*100);
       const color = pctColor(pct);
       return `
