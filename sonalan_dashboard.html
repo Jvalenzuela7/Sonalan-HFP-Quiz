@@ -191,7 +191,7 @@
     </div>
     <div class="kpi-card">
       <span class="kpi-val c-green" id="kpi-perfect">0</span>
-      <span class="kpi-lbl">Puntaje perfecto 10/10</span>
+      <span class="kpi-lbl">Puntaje perfecto 20/20</span>
     </div>
   </div>
 
@@ -324,10 +324,10 @@ function renderDashboard(rows) {
     const pcts   = rows.map(r => parseInt(r["Porcentaje"]) || 0);
     const avg    = (scores.reduce((a,b)=>a+b,0) / total).toFixed(1);
     const avgPct = Math.round(pcts.reduce((a,b)=>a+b,0) / total);
-    const perfect = rows.filter(r => parseInt(r["Score"]) === 10).length;
+    const perfect = rows.filter(r => parseInt(r["Score"]) === 20).length;
 
     const avgEl = document.getElementById("kpi-avg");
-    avgEl.textContent = avg + "/10";
+    avgEl.textContent = avg + "/20";
     avgEl.style.color = pctColor(avgPct);
 
     const pctEl = document.getElementById("kpi-pct");
@@ -383,7 +383,7 @@ function renderDashboard(rows) {
         <div class="lb-row">
           <span class="lb-rank" style="color:${rankColors[i]}">${i+1}</span>
           <span class="lb-name">${r.Nombre || "—"}</span>
-          <span class="lb-score" style="color:${pctColor(pct)}">${score}/10</span>
+          <span class="lb-score" style="color:${pctColor(pct)}">${score}/20</span>
         </div>`;
     }).join("");
   }
@@ -417,7 +417,7 @@ function renderDashboard(rows) {
         return `
           <div class="part-row">
             <span class="part-name">${r.Nombre || "—"}</span>
-            <span class="part-score" style="color:${pctColor(pct)}">${score}/10 · ${pct}%</span>
+            <span class="part-score" style="color:${pctColor(pct)}">${score}/20 · ${pct}%</span>
           </div>`;
       }).join("");
   }
