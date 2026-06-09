@@ -253,7 +253,7 @@
 <script>
 // ══ CONFIGURACIÓN ═══════════════════════════════════════════
 // ⚠️ REEMPLAZA esta URL con la de tu Google Apps Script Web App
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7MCxGDZVTeKHEQFXyfRxaMKNoDXgpYMbHKq1AQdN8CA2NDAcCRjtmtL-bDrQePUYVLA/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_CNW4yTnK7LeIblLYWm-nWxpXV-3ZBVwbWD7H84O3N21Rd8PIROJ8rwQBDaMgyNoW8w/exec";
 // ════════════════════════════════════════════════════════════
 
 const QUESTIONS = [
@@ -326,15 +326,114 @@ const QUESTIONS = [
     legend:"Sonalan tiene tolerancias EPA en estos cultivos."
   },
   {
-    id:10, tag:"p", tagLabel:"A PENSAR",
-    text:"¿En cuál de estas situaciones el uso de Sonalan HFP está CONTRAINDICADO?",
+    id:11, tag:"t", tagLabel:"TÉCNICA",
+    text:"¿Por qué la etalfluralina prácticamente no se mueve en el perfil del suelo una vez incorporada?",
     options:[
-      "En cultivos de calabacita con textura de suelo media",
-      "En pre-trasplante de chile jalapeño con pH 5.8",
-      "Bajo acolchado plástico y altas temperaturas.",
-      "En leguminosas incorporado al suelo"
+      "Porque es muy pesada y la gravedad la mantiene en su lugar.",
+      "Porque su alta afinidad por la materia orgánica del suelo la retiene.",
+      "Porque se congela en las partículas de arcilla al contacto con el suelo.",
+      "Porque reacciona químicamente con el agua del suelo formando un compuesto sólido."
+    ],
+    correct:1
+  },
+  {
+    id:12, tag:"p", tagLabel:"A PENSAR",
+    text:"¿Cuál es el principal factor que destruye la eficacia de la etalfluralina cuando queda en la superficie del suelo sin incorporar?",
+    options:[
+      "La hidrólisis ácida — el suelo con pH menor a 6 descompone la molécula rápidamente.",
+      "La oxidación enzimática — los microorganismos del suelo la degradan en las primeras 24 horas.",
+      "La fotodegradación — la radiación UV fragmenta la molécula en metabolitos sin actividad herbicida.",
+      "La adsorción irreversible — las arcillas atrapan la molécula antes de que pueda actuar."
     ],
     correct:2
+  },
+  {
+    id:13, tag:"p", tagLabel:"A PENSAR",
+    text:"Un técnico aplica Sonalan HFP sobre un suelo recién regado, con temperatura de 38°C y viento moderado. ¿Qué está ocurriendo con el producto en ese momento?",
+    options:[
+      "Se está activando correctamente porque la humedad del suelo lo incorpora de inmediato.",
+      "Se está perdiendo activamente por volatilización ya que el suelo húmedo, el calor y el viento son la combinación de mayor pérdida.",
+      "Se está adsorbiendo fuertemente a las arcillas porque el agua mejora la adsorción.",
+      "Se está distribuyendo uniformemente en el perfil gracias a la humedad del suelo."
+    ],
+    correct:1
+  },
+  {
+    id:14, tag:"p", tagLabel:"A PENSAR",
+    text:"¿Por qué un riego pesado después de aplicar Sonalan HFP puede ser perjudicial aunque ayude a la incorporación?",
+    options:[
+      "Porque el exceso de agua hidroliza la molécula y la destruye.",
+      "Porque moja demasiado el suelo y activa las semillas de maleza.",
+      "Porque puede lixiviar el producto más abajo de la zona de germinación de malezas y causar fitotoxicidad al cultivo.",
+      "Porque diluye tanto el producto que pierde su color característico."
+    ],
+    correct:2
+  },
+  {
+    id:15, tag:"t", tagLabel:"TÉCNICA",
+    text:"¿Cuál es la combinación ideal de condiciones para aplicar Sonalan HFP y minimizar pérdidas antes de la incorporación?",
+    options:[
+      "Suelo húmedo y temperatura de 28–30°C — la humedad garantiza que el producto llegue a la zona de germinación de malezas sin necesidad de riego posterior.",
+      "Suelo seco o con humedad moderada, temperatura fresca y aplicación temprano en la mañana.",
+      "Suelo recién labrado con temperatura alta — la labranza reciente expone sitios de adsorción frescos que fijan el producto antes de que se volatilice.",
+      "Viento moderado con suelo húmedo — el viento distribuye uniformemente el producto y la humedad lo incorpora de forma natural."
+    ],
+    correct:1
+  },
+  {
+    id:16, tag:"t", tagLabel:"TÉCNICA",
+    text:"¿Por qué la misma dosis de Sonalan HFP que controla perfectamente las malezas en un suelo arenoso puede fallar en un suelo arcilloso?",
+    options:[
+      "Porque el suelo arcilloso tiene mayor temperatura y degrada el producto más rápido.",
+      "Porque el suelo arcilloso adsorbe más etalfluralina a sus partículas, reduciendo la fracción libre disponible para actuar sobre las malezas.",
+      "Porque las malezas en suelos arcillosos tienen raíces más profundas y el producto no las alcanza.",
+      "Porque el pH de los suelos arcillosos hidroliza el ingrediente activo antes de que actúe."
+    ],
+    correct:1
+  },
+  {
+    id:17, tag:"p", tagLabel:"A PENSAR",
+    text:"¿Por qué la etiqueta de Sonalan HFP prohíbe su uso en suelos con más del 10% de materia orgánica?",
+    options:[
+      "Porque la alta materia orgánica acelera la degradación microbiana del producto en menos de 24 horas.",
+      "Porque el exceso de materia orgánica genera fitotoxicidad al cultivo cuando se combina con etalfluralina.",
+      "Porque prácticamente toda la etalfluralina quedaría adsorbida a la materia orgánica sin dejar fracción libre suficiente para controlar malezas a ninguna dosis razonable.",
+      "Porque los suelos con alta materia orgánica tienen pH ácido que neutraliza el ingrediente activo."
+    ],
+    correct:2
+  },
+  {
+    id:18, tag:"p", tagLabel:"A PENSAR",
+    text:"En octubre en el Valle de Culiacán la temperatura promedio del suelo es 28°C. En diciembre baja a 18°C. Un productor aplica Sonalan HFP en diciembre esperando el mismo período de control que obtuvo en octubre. ¿Qué debería anticipar?",
+    options:[
+      "El mismo período de control — la degradación microbiana es constante independientemente de la temperatura estacional.",
+      "Menor período de control — las temperaturas más frías en diciembre reducen la volatilización acelerando la acumulación del producto en suelo.",
+      "Mayor período de control — con 10°C menos la actividad microbiana se reduce aproximadamente a la mitad, degradando el producto más lento y extendiendo su eficacia.",
+      "Menor período de control — el frío de diciembre aumenta la solubilidad de la etalfluralina en agua lixiviándola fuera de la zona de acción."
+    ],
+    correct:2
+  },
+  {
+    id:19, tag:"b", tagLabel:"BÁSICA",
+    text:"¿Por qué los microorganismos del suelo degradan la etalfluralina?",
+    options:[
+      "Porque la etalfluralina es su fuente principal de alimento y la buscan activamente.",
+      "Porque sus enzimas la rompen como reacción secundaria mientras degradan materia orgánica — proceso llamado cometabolismo.",
+      "Porque la etalfluralina es tóxica para los microorganismos y estos la neutralizan para sobrevivir.",
+      "Porque los microorganismos necesitan el nitrógeno de los grupos nitro de la molécula para crecer."
+    ],
+    correct:1
+  },
+  {
+    id:20, tag:"p", tagLabel:"A PENSAR",
+    text:"¿Cuál de estas prácticas agrícolas favorecería una degradación más rápida de los residuos de etalfluralina entre ciclos de cultivo?",
+    options:[
+      "Dejar el suelo en barbecho seco sin riego — el reposo total favorece la recuperación microbiana.",
+      "Aplicar un riego moderado después de la cosecha para mantener humedad óptima y favorecer la actividad microbiana que degrada los residuos.",
+      "Aplicar una segunda dosis de etalfluralina — la mayor concentración acelera el cometabolismo microbiano.",
+      "Labrar profundo para exponer los residuos a la superficie donde la fotodegradación los elimina rápidamente."
+    ],
+    correct:1
   }
 ];
 
